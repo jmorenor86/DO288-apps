@@ -1,4 +1,3 @@
----
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -15,16 +14,18 @@ spec:
       type: string
     - name: NODE_IMAGE
       type: string
-      default: "registry.ocp4.example.com:8443/ubi9/nodejs-18-minimal:1-51"
+      default: "registry.access.redhat.com/ubi9/nodejs-18"
   steps:
-    - name: npm-run
-      image: $(params.NODE_IMAGE)
-      script: |
-        npm $(params.ARGS)
-      workingDir: $(workspaces.source.path)/$(params.CONTEXT)
-      env:
-        - name: CI
-          value: "true"
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
+  - name: npm-run
+    image: $(params.NODE_IMAGE)
+    script: |
+      echo "⚙️ Creando .npmrc temporal en /tmp"
+      echo "registry=https://registry.npmjs.org/" > /tmp/.npmrc
+      npm --userconfig=/tmp/.npmrc $(params.ARGS)
+    workingDir: $(workspaces.source.path)/$(params.CONTEXT)
+    env:
+      - name: CI
+        value: "true"
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
